@@ -1,18 +1,13 @@
 import { closest } from 'color-diff';
+import { default as defaultColors } from 'tailwindcss/colors';
 import * as vscode from 'vscode';
 import { hexToRgb, isHexValid } from './functions';
-import {
-	tailwindColorsByHex,
-	tailwindColorsInRgb,
-	tailwindHexByRgb,
-} from './tailwind';
+import { colors, type TailwindColor } from './tailwind';
 import type { setupUtils } from './utilities';
 
-export function replace(options: {
-	utilities: ReturnType<typeof setupUtils>;
-	context?: vscode.ExtensionContext;
-}) {
-	const { log, warn, error, isDebugMode, showOutput } = options.utilities;
+export function replace(options: { utilities: ReturnType<typeof setupUtils> }) {
+	const { log, warn, error } = options.utilities;
+	const { tailwindColors, tailwindColorsRgb } = colors(defaultColors);
 	return async () => {
 		// get the active text editor
 		const editor = vscode.window.activeTextEditor;
@@ -22,69 +17,47 @@ export function replace(options: {
 			return;
 		}
 
-		// create a map of selections by their text
-		const selectionsByText = new Map<string, vscode.Selection>();
+		// create an array of selections and their tailwind colors
+		const selectionsColor: [vscode.Selection, TailwindColor][] = [];
 		// loop through the selections
 		for (const selection of editor.selections) {
 			// get the text of the selection
-			const selectionText = editor.document.getText(selection);
-			// make sure the selection is a valid hex color
-			if (selectionText && !isHexValid(selectionText)) {
-				// skip the invalid selection
+			const text = editor.document.getText(selection);
+			// skip if the text is not a valid hex color
+			if (!isHexValid(text)) {
+				// warn the user about the invalid hex color
+				if (text.trim() && !text.startsWith('#')) {
+					warn('Hex color must start with #.');
+				}
 				continue;
 			}
-			// map the selection text to the selection
-			selectionsByText.set(selectionText, selection);
+			// get the rgb value of the selection text
+			const rgb = hexToRgb(text);
+			// find the closest tailwind color
+			const closestRgb = closest(rgb, tailwindColorsRgb);
+			// find the tailwind color name
+			const color = tailwindColors.get(JSON.stringify(closestRgb));
+			// skip if the tailwind color is not available
+			if (!color) {
+				error('Tailwind color not available.', {
+					openIssueReporter: true,
+				});
+				continue;
+			}
+			// add the selection and its tailwind color to the map
+			selectionsColor.push([selection, color]);
 		}
-		// make sure there are selections
-		if (selectionsByText.size) {
-			warn('No valid hex color selected.');
+		// skip if there are no valid selections
+		if (!selectionsColor.length) {
 			return;
 		}
 
-		// create a map of tailwind colors by their selection text
-		const tailwindColorsBySelectionText = new Map<string, string>();
-		// loop through the selections
-		for (const [selectionText, selection] of selectionsByText) {
-			// get the rgb value of the selection text
-			const selectionRgb = hexToRgb(selectionText);
-			// find the closest tailwind color
-			const closestRgb = closest(selectionRgb, tailwindColorsInRgb);
-			// find the tailwind color name
-			let tailwindColor = tailwindHexByRgb.get(
-				JSON.stringify(closestRgb),
-			);
-			// error if the tailwind color is not found
-			if (!tailwindColor) {
-				error(`Tailwind Color Not Found: ${selectionText}`);
-				continue;
-			}
-			tailwindColor = tailwindColorsByHex.get(tailwindColor);
-			// error if the tailwind color name is not found
-			if (!tailwindColor) {
-				error(`Tailwind Color Not Found: ${selectionText}`);
-				continue;
-			}
-			// map the selection text to the tailwind color
-			tailwindColorsBySelectionText.set(selectionText, tailwindColor);
-			// log(JSON.stringify([selectionText, tailwindColor], null, 2));
-		}
-
-		// replace the selection with the closest tailwind color
-		await editor.edit((editBuilder) => {
-			for (const [
-				selectionText,
-				tailwindColor,
-			] of tailwindColorsBySelectionText) {
-				// get the selection using the text
-				const selection = selectionsByText.get(selectionText);
-				// error if the selection is empty
-				if (!selection) {
-					error(`Selection Not Found: ${selectionText}`);
-					continue;
-				}
+		// start editing the document
+		await editor.edit((builder) => {
+			// loop through the selections and their tailwind colors
+			for (const [selection, tailwindColor] of selectionsColor) {
 				// replace the selection with the tailwind color
-				editBuilder.replace(selection, tailwindColor);
+				builder.replace(selection, tailwindColor);
 			}
 		});
 	};

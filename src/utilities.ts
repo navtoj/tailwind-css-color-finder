@@ -43,8 +43,45 @@ export const setupUtils = (options: { context: vscode.ExtensionContext }) => {
 		}
 	}
 
-	function error(message: string) {
-		vscode.window.showErrorMessage(message);
+	function error(
+		message: string,
+		options?: {
+			openIssueReporter: boolean;
+		},
+	) {
+		vscode.window
+			.showErrorMessage(
+				message,
+				...(options?.openIssueReporter ? ['Report Bug'] : []),
+			)
+			.then(async (value) => {
+				if (options?.openIssueReporter && value === 'Report Bug') {
+					await vscode.commands.executeCommand(
+						'workbench.action.openIssueReporter',
+						{
+							extensionId: 'navtoj.tailwind-css-color-finder',
+							issueTitle: message,
+							issueBody: [
+								[
+									'## Expected Behavior',
+									'<!--- What should happen -->',
+								].join('\n'),
+								[
+									'## Current Behavior',
+									'<!--- What happens instead of the expected behavior -->',
+								].join('\n'),
+								[
+									'## Steps to Reproduce',
+									'<!--- What steps can be done to reproduce -->',
+									'1.',
+									'2.',
+									'3.',
+								].join('\n'),
+							].join('\n\n'),
+						},
+					);
+				}
+			});
 		output.error(message);
 		if (isDebugMode) {
 			console.error(message);

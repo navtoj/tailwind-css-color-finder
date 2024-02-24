@@ -1,30 +1,8 @@
-import { RGBColor } from 'color-diff';
+import type { RGBColor } from 'color-diff';
 
 // starts with # and contains either 3 or 6 or 4 or 8 hexadecimal characters
 const HexColorRegex = /^#(?:(?:[a-f\d]{3}){1,2}|(?:[a-f\d]{4}){1,2})$/i;
-export const isHexValid = (value: string) => HexColorRegex.test(value); //.startsWith('#') ? value : `#${value}`);
-export const isRgbValid = (
-	red: number,
-	green: number,
-	blue: number,
-	alpha: number,
-) => {
-	const rgbMin = 0;
-	const rgbMax = 255;
-	const alphaMin = 0;
-	const alphaMax = 1;
-	// check if all values are within the valid range
-	return (
-		red >= rgbMin &&
-		red <= rgbMax &&
-		green >= rgbMin &&
-		green <= rgbMax &&
-		blue >= rgbMin &&
-		blue <= rgbMax &&
-		alpha >= alphaMin &&
-		alpha <= alphaMax
-	);
-};
+export const isHexValid = (value: string) => HexColorRegex.test(value);
 
 // https://developer.mozilla.org/en-US/docs/Web/CSS/hex-color#syntax
 export const hexToRgb = (value: string): RGBColor => {
@@ -54,21 +32,4 @@ export const hexToRgb = (value: string): RGBColor => {
 
 	// return the rgba values
 	return { R, G, B, A };
-};
-
-// https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/rgb#syntax
-export const rgbToHex = (value: RGBColor) => {
-	// decimal to hexadecimal converter
-	const convert = (number: number) => number.toString(16).padStart(2, '0');
-
-	// get the hexadecimal values
-	const R = convert(value.R);
-	const G = convert(value.G);
-	const B = convert(value.B);
-
-	// get the alpha value if it exists
-	const A = value.A !== undefined ? convert(value.A * 255) : '';
-
-	// return the hex values
-	return `#${R}${G}${B}${A}`;
 };
