@@ -1,11 +1,15 @@
 {
 	"name": "tailwind-css-color-finder",
 	"displayName": "Tailwind CSS Color Finder",
-	"description": "Find the closest tailwindcss color.",
+	"description": "Find the closest tailwind color for a hex value in your code.",
 	"version": "0.0.1",
 	"publisher": "navtoj",
 	"engines": {
 		"vscode": "^1.86.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/navtoj/tailwind-css-color-finder"
 	},
 	"categories": [
 		"Other"
