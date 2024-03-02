@@ -1,6 +1,6 @@
 # Tailwind CSS Color Finder
 
-Find the closest tailwind color for a hex value in your code.
+A VS Code extension to find the closest tailwind color for a hex value in your code.
 
 ## Features
 
