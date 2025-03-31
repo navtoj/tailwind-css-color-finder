@@ -2,7 +2,7 @@
 	"name": "tailwind-css-color-finder",
 	"displayName": "Tailwind CSS Color Finder",
 	"description": "Find the closest tailwind color for a hex value in your code.",
-	"version": "0.0.1",
+	"version": "1.0.1",
 	"publisher": "navtoj",
 	"engines": {
 		"vscode": "^1.98.0"
@@ -20,7 +20,7 @@
 		"commands": [
 			{
 				"command": "tailwind-css-color-finder.replace",
-				"title": "Replace selection with Tailwind CSS color(s).",
+				"title": "Replace with tailwind color(s).",
 				"enablement": "editorHasSelection && !editorReadonly"
 			}
 		],

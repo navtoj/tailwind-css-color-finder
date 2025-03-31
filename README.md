@@ -2,18 +2,30 @@
 
 A VS Code extension to find the closest tailwind color for a hex value in your code.
 
-For example, if you select `#EF4444` and run the extension, it will replace that `#EF4444` with `red-500` in your code.
+## Usage
 
-## Release Notes
+Simply select some text and run the command.
 
-### 1.0.0
+Any hex color values (`#EF4444`) will be replaced with tailwind colors (`red-500`).
 
-Initial release of Tailwind CSS Color Finder
+### Before
 
-<!-- ### 1.0.1
+![Extension Command](./.github/assets/before.png)
 
-Fixed issue #.
+<!-- ```html
+<p class="bg-[#EF4444]">#EF4444</p>
+``` -->
 
-### 1.1.0
+### After
 
-Added features X, Y, and Z. -->
+![Extension Command](./.github/assets/after.png)
+
+<!-- ```html
+<p class="bg-red-500">red-500</p>
+``` -->
+
+## Suggestion
+
+Assign a keyboard shortcut for the command.
+
+![Keyboard Shortcut](./.github/assets/shortcut.png)
