@@ -53,7 +53,7 @@ export function replace(options: { utilities: ReturnType<typeof setupUtils> }) {
 		}
 
 		// start editing the document
-		await editor.edit((builder) => {
+		await editor.edit(builder => {
 			// loop through the selections and their tailwind colors
 			for (const [selection, tailwindColor] of selectionsColor) {
 				// replace the selection with the tailwind color

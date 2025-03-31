@@ -14,7 +14,7 @@ export const hexToRgb = (value: string): RGBColor => {
 		// get all the characters
 		let chars = hex.split('');
 		// duplicate each character
-		chars = chars.map((char) => char + char);
+		chars = chars.map(char => char + char);
 		// convert the characters back to a string
 		hex = chars.join('');
 	}

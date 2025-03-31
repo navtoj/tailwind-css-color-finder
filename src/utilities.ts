@@ -54,7 +54,7 @@ export const setupUtils = (options: { context: vscode.ExtensionContext }) => {
 				message,
 				...(options?.openIssueReporter ? ['Report Bug'] : []),
 			)
-			.then(async (value) => {
+			.then(async value => {
 				if (options?.openIssueReporter && value === 'Report Bug') {
 					await vscode.commands.executeCommand(
 						'workbench.action.openIssueReporter',
