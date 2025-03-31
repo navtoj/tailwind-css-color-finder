@@ -1,8 +1,9 @@
 import type { RGBColor } from 'color-diff';
 
 // starts with # and contains either 3 or 6 or 4 or 8 hexadecimal characters
-const HexColorRegex = /^#(?:(?:[a-f\d]{3}){1,2}|(?:[a-f\d]{4}){1,2})$/i;
-export const isHexValid = (value: string) => HexColorRegex.test(value);
+// and/or starts with -[ and ends with ]
+export const HexColorRegex =
+	/(?:#(?:(?:[a-f\d]{3}){1,2}|(?:[a-f\d]{4}){1,2}))|(?:-\[#(?:(?:[a-f\d]{3}){1,2}|(?:[a-f\d]{4}){1,2})\])/gi;
 
 // https://developer.mozilla.org/en-US/docs/Web/CSS/hex-color#syntax
 export const hexToRgb = (value: string): RGBColor => {

@@ -1,8 +1,8 @@
 import { closest } from 'color-diff';
 import { default as defaultColors } from 'tailwindcss/colors';
 import * as vscode from 'vscode';
-import { hexToRgb, isHexValid } from './functions';
-import { colors, type TailwindColor } from './tailwind';
+import { HexColorRegex, hexToRgb } from './functions';
+import { colors } from './tailwind';
 import type { setupUtils } from './utilities';
 
 export function replace(options: { utilities: ReturnType<typeof setupUtils> }) {
@@ -17,47 +17,65 @@ export function replace(options: { utilities: ReturnType<typeof setupUtils> }) {
 			return;
 		}
 
-		// create an array of selections and their tailwind colors
-		const selectionsColor: [vscode.Selection, TailwindColor][] = [];
+		// create an array of selections and their tailwind colored replacements
+		const selectionReplacements: [vscode.Selection, string][] = [];
 		// loop through the selections
 		for (const selection of editor.selections) {
 			// get the text of the selection
-			const text = editor.document.getText(selection);
-			// skip if the text is not a valid hex color
-			if (!isHexValid(text)) {
-				// warn the user about the invalid hex color
-				if (text.trim() && !text.startsWith('#')) {
-					warn('Hex color must start with #.');
+			let text = editor.document.getText(selection);
+			// find all hex colors
+			const matches = [...text.matchAll(HexColorRegex)];
+			// skip if no valid hex colors found
+			if (matches.length === 0) {
+				warn('No valid hex colors found.');
+				continue;
+			}
+			// loop through the hex colors
+			for (const match of matches) {
+				// get match text
+				const matchText = match[0];
+				// check if color inside tailwind format: bg-[#ffffff]
+				const inTwFormat =
+					matchText.startsWith('-[') && matchText.endsWith(']');
+				// get hex color from match
+				const hexColor = inTwFormat
+					? matchText.slice(2, -1)
+					: matchText;
+				// get the rgb value of the selection text
+				const rgbColor = hexToRgb(hexColor);
+				// find the closest tailwind color
+				const closestRgb = closest(rgbColor, tailwindColorsRgb);
+				// find the tailwind color name
+				let tailwindColor = tailwindColors.get(
+					JSON.stringify(closestRgb),
+				);
+				// skip if the tailwind color is not available
+				if (!tailwindColor) {
+					error(`Tailwind color not available: ${match}`, {
+						openIssueReporter: true,
+					});
+					continue;
 				}
-				continue;
+				// replace the hex color with the tailwind color
+				text = text.replace(
+					matchText,
+					inTwFormat ? `-${tailwindColor}` : tailwindColor,
+				);
 			}
-			// get the rgb value of the selection text
-			const rgb = hexToRgb(text);
-			// find the closest tailwind color
-			const closestRgb = closest(rgb, tailwindColorsRgb);
-			// find the tailwind color name
-			const color = tailwindColors.get(JSON.stringify(closestRgb));
-			// skip if the tailwind color is not available
-			if (!color) {
-				error('Tailwind color not available.', {
-					openIssueReporter: true,
-				});
-				continue;
-			}
-			// add the selection and its tailwind color to the map
-			selectionsColor.push([selection, color]);
+			// add the selection and its tailwind replacement to the map
+			selectionReplacements.push([selection, text]);
 		}
 		// skip if there are no valid selections
-		if (!selectionsColor.length) {
+		if (!selectionReplacements.length) {
 			return;
 		}
 
 		// start editing the document
 		await editor.edit(builder => {
-			// loop through the selections and their tailwind colors
-			for (const [selection, tailwindColor] of selectionsColor) {
-				// replace the selection with the tailwind color
-				builder.replace(selection, tailwindColor);
+			// loop through the selections and their tailwind replacements
+			for (const [selection, repacement] of selectionReplacements) {
+				// replace the selection with the tailwind counterpart
+				builder.replace(selection, repacement);
 			}
 		});
 	};

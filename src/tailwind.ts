@@ -16,7 +16,7 @@ type InvalidColors<T> = {
 }[keyof T];
 type Color = Exclude<keyof DefaultColors, InvalidColors<DefaultColors>>;
 type Shade = keyof DefaultColors[Color];
-export type TailwindColor = `${Color}-${Shade}`;
+type TailwindColor = `${Color}-${Shade}`;
 
 export function colors(defaultColors: DefaultColors) {
 	// create an array of tailwind colors in rgb
